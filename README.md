@@ -21,7 +21,8 @@
 
 # 블로그 (Astro)
 
-이 레포는 Astro 기반 정적 블로그이기도 합니다. `src/content/posts/`의 마크다운 파일이 곧 블로그 글입니다.
+이 레포는 Astro 기반 블랙 앤 화이트 정적 블로그이기도 합니다. `src/content/posts/`의 마크다운 파일이
+곧 블로그 글이며, 배포 주소는 **https://chaerishtil.vercel.app** 입니다.
 
 ## 로컬 실행
 
@@ -30,7 +31,20 @@ npm install
 npm run dev
 ```
 
-`http://localhost:4321`에서 확인합니다.
+`http://localhost:4321`에서 확인합니다. `/write` 기능까지 로컬에서 테스트하려면 아래 환경변수 섹션을
+참고해 `.env` 파일을 만들어두세요 (`.env`는 `.gitignore`에 포함되어 커밋되지 않습니다).
+
+## 페이지 구성
+
+| 경로 | 설명 |
+| --- | --- |
+| `/` | 글 목록 |
+| `/posts/[slug]` | 글 상세 |
+| `/tags`, `/tags/[tag]` | 태그 전체 목록 / 태그별 필터링 |
+| `/rss.xml` | RSS 피드 |
+| `/about` | 프로필 소개 (`src/data/profile.ts` 편집) |
+| `/portfolio` | 포트폴리오 프로젝트 목록 (`src/data/portfolio.ts` 편집) |
+| `/write` | 관리자 전용 글쓰기 웹 에디터 |
 
 ## 새 글 쓰는 법 (파일로 직접 작성)
 
@@ -44,7 +58,10 @@ tags: [astro, blog]
 description: 한 줄 요약
 ---
 
-본문 내용을 마크다운으로 작성합니다.
+본문 내용을 마크다운으로 작성합니다. 코드 블록은 \`\`\`언어 로 감싸면 자동으로
+문법 강조(syntax highlighting)가 적용됩니다.
+
+이미지는 `public/images/` 아래에 파일을 두고 `![설명](/images/파일명.png)`으로 참조하세요.
 ```
 
 파일을 추가하고 `main` 브랜치에 push하면 Vercel이 자동으로 빌드/배포합니다.
@@ -52,11 +69,19 @@ description: 한 줄 요약
 ## 새 글 쓰는 법 (웹 에디터, `/write`)
 
 배포된 사이트의 `/write` 경로에서 관리자 아이디/비밀번호를 입력하면 제목/태그/마크다운 본문을 작성하는
-에디터가 나타납니다. "발행"을 누르면 서버(`/api/publish`)가 GitHub API로
-`src/content/posts/YYYY-MM-DD-slug.md` 파일을 생성해 `main` 브랜치에 직접 커밋합니다.
-커밋이 푸시되면 Vercel이 자동으로 재배포하므로 잠시 후 블로그에 새 글이 반영됩니다.
+에디터가 나타납니다 (실시간 미리보기 포함, 회원가입 기능은 없고 단일 관리자 계정만 존재).
 
-> 커밋 후 바로 새 글 페이지로 이동하지만, Vercel 재배포가 끝나기 전까지는 잠깐 404가 보일 수 있습니다.
+- **이미지 첨부**: 에디터의 "이미지 첨부" 버튼으로 파일을 선택하면 `/api/upload-image`가 GitHub API로
+  `public/images/uploads/`에 이미지를 커밋하고, 본문 커서 위치에 `![](경로)` 마크다운이 자동 삽입됩니다.
+  (png, jpg, gif, webp, svg / 4MB 이하)
+- **코드 블록**: 마크다운에 \`\`\` 코드 펜스로 작성하면 실제 글 페이지에서 Shiki로 자동 하이라이팅됩니다.
+- **발행**: "발행" 버튼을 누르면 서버(`/api/publish`)가 GitHub API로
+  `src/content/posts/YYYY-MM-DD-slug.md` 파일을 생성해 `main` 브랜치에 직접 커밋합니다.
+
+커밋이 푸시되면 Vercel이 자동으로 재배포하므로 잠시 후 블로그에 반영됩니다.
+
+> 발행/이미지 업로드 직후 바로 이동하거나 참조하지만, Vercel 재배포가 끝나기 전까지는 잠깐 404가
+> 보일 수 있습니다 (보통 1~2분 이내).
 
 ### 환경변수 설정 (Vercel 대시보드)
 
@@ -72,18 +97,22 @@ Vercel 프로젝트 → **Settings → Environment Variables**에서 아래 값�
 | `GITHUB_REPO` | 저장소 이름 (예: `TIL`) |
 | `GITHUB_BRANCH` | 커밋할 브랜치 (기본값 `main`) |
 
-로컬에서 `/write` 기능까지 테스트하려면 위 값들을 `.env` 파일에 넣고 `npm run dev`로 실행하세요
-(`.env`는 `.gitignore`에 포함되어 커밋되지 않습니다).
+이 값들은 **절대 코드에 직접 넣거나 커밋하지 마세요.** 이 레포는 GitHub에서 public이라, 코드에
+하드코딩하면 전 세계 누구나 관리자 계정과 토큰을 볼 수 있게 됩니다. 반드시 Vercel 환경변수로만 관리하세요.
+
+**로그인이 계속 401로 실패한다면** Vercel에 등록한 `WRITE_USERNAME`/`WRITE_PASSWORD` 값에 오타나
+공백이 없는지, 그리고 값을 추가/수정한 뒤 **재배포(Redeploy)** 를 했는지 확인하세요. Vercel은 환경변수를
+바꿔도 기존 배포에는 소급 적용되지 않고, 다음 배포부터 반영됩니다.
 
 ### GitHub Personal Access Token 발급 방법
 
 1. GitHub → 우측 상단 프로필 → **Settings → Developer settings → Personal access tokens → Fine-grained tokens**
 2. **Generate new token** 클릭
 3. **Repository access**: "Only select repositories"를 선택하고 이 블로그 저장소만 선택 (토큰 권한을 최소 범위로 제한)
-4. **Permissions → Repository permissions → Contents**: **Read and write**로 설정 (글 파일을 커밋하는 데 필요한 유일한 권한)
+4. **Permissions → Repository permissions → Contents**: **Read and write**로 설정 (글/이미지 파일을 커밋하는 데 필요한 유일한 권한)
 5. 토큰 생성 후 값을 복사해 Vercel의 `GITHUB_TOKEN` 환경변수에 등록
 
-토큰은 클라이언트에 절대 노출되지 않고 `/api/publish` 서버리스 함수 안에서만 사용됩니다.
+토큰은 클라이언트에 절대 노출되지 않고 서버리스 함수 안에서만 사용됩니다.
 
 ## 배포 (Vercel)
 
@@ -92,22 +121,34 @@ Vercel 프로젝트 → **Settings → Environment Variables**에서 아래 값�
 3. 위 환경변수를 등록한 뒤 배포합니다.
 4. 이후 `main` 브랜치에 push(직접 push든 `/write`를 통한 커밋이든)할 때마다 자동으로 재배포됩니다.
 
+## 프로필 / 포트폴리오 수정하기
+
+- `src/data/profile.ts`: 이름, 역할, 소개 문구, 링크(GitHub/이메일 등) 수정
+- `src/data/portfolio.ts`: 프로젝트 배열에 `{ title, description, period, tags, link }` 형태로 추가/수정
+
+두 파일 다 일반 TypeScript 파일이라 값만 바꿔서 커밋하면 됩니다.
+
 ## 프로젝트 구조
 
 ```
 src/
-  content.config.ts       콘텐츠 컬렉션 스키마 정의
-  content/posts/*.md      블로그 글
-  layouts/                BaseLayout, PostLayout
-  components/             Header, ThemeToggle, PostCard
+  content.config.ts        콘텐츠 컬렉션 스키마 정의
+  content/posts/*.md       블로그 글
+  data/profile.ts          /about 페이지 데이터
+  data/portfolio.ts        /portfolio 페이지 데이터
+  layouts/                 BaseLayout, PostLayout
+  components/              Header, ThemeToggle, PostCard
   pages/
-    index.astro           글 목록
-    posts/[slug].astro    글 상세
-    tags/index.astro      태그 전체 목록
-    tags/[tag].astro      태그별 필터링
-    rss.xml.js            RSS 피드
-    write.astro           글쓰기 웹 UI (비밀번호 보호)
-    api/login.ts          비밀번호 검증 + 세션 쿠키 발급
-    api/publish.ts        GitHub API로 글 파일 커밋
-  lib/                     auth, github, slugify 헬퍼
+    index.astro            글 목록
+    posts/[slug].astro     글 상세
+    tags/index.astro       태그 전체 목록
+    tags/[tag].astro       태그별 필터링
+    rss.xml.js             RSS 피드
+    about.astro            프로필 소개
+    portfolio.astro        포트폴리오
+    write.astro            글쓰기 웹 UI (관리자 전용)
+    api/login.ts           아이디/비밀번호 검증 + 세션 쿠키 발급
+    api/publish.ts         GitHub API로 글 파일 커밋
+    api/upload-image.ts    GitHub API로 이미지 파일 커밋
+  lib/                      auth, github, slugify 헬퍼
 ```

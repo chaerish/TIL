@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { portfolio } from '../data/portfolio';
+
+export const prerender = true;
+---
+
+<BaseLayout title="포트폴리오 · TIL Blog" description="만든 것들 모음">
+  <h1>포트폴리오</h1>
+  {portfolio.length === 0 ? (
+    <p class="empty-state">아직 등록된 프로젝트가 없습니다.</p>
+  ) : (
+    <ul class="post-list">
+      {portfolio.map((item) => (
+        <li class="post-card">
+          <div class="post-card-title">
+            {item.link ? (
+              <a href={item.link} target="_blank" rel="noopener noreferrer">{item.title}</a>
+            ) : (
+              item.title
+            )}
+          </div>
+          {item.period && <div class="post-card-meta">{item.period}</div>}
+          <p class="post-card-desc">{item.description}</p>
+          {item.tags.length > 0 && (
+            <ul class="tag-list">
+              {item.tags.map((tag) => (
+                <li class="tag">{tag}</li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  )}
+</BaseLayout>

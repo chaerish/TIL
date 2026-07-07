@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { profile } from '../data/profile';
+
+export const prerender = true;
+---
+
+<BaseLayout title="소개 · TIL Blog" description={profile.bio}>
+  <h1>{profile.name}</h1>
+  <p class="post-card-meta">{profile.role}</p>
+  <p>{profile.bio}</p>
+  {profile.links.length > 0 && (
+    <ul class="tag-list">
+      {profile.links.map((link) => (
+        <li>
+          <a class="tag" href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+        </li>
+      ))}
+    </ul>
+  )}
+</BaseLayout>

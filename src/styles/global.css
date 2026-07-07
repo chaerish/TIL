@@ -6,6 +6,19 @@
   --accent: #000000;
   --code-bg: #f4f4f4;
   --max-width: 680px;
+
+  /* shiki (code block syntax highlighting) — kept grayscale to match the B&W theme */
+  --shiki-color-text: var(--fg);
+  --shiki-color-background: transparent;
+  --shiki-token-constant: var(--fg);
+  --shiki-token-string: var(--muted);
+  --shiki-token-comment: var(--muted);
+  --shiki-token-keyword: var(--fg);
+  --shiki-token-parameter: var(--fg);
+  --shiki-token-function: var(--fg);
+  --shiki-token-string-expression: var(--muted);
+  --shiki-token-punctuation: var(--muted);
+  --shiki-token-link: var(--fg);
 }
 
 :root[data-theme='dark'] {
@@ -324,6 +337,32 @@ blockquote {
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: none;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+.btn-secondary:hover {
+  border-color: var(--fg);
+  opacity: 1;
+}
+
+.image-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.upload-status {
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
 .notice {
