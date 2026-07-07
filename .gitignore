@@ -14,3 +14,9 @@ node_modules/
 # editor
 .idea/
 .DS_Store
+
+# personal documents (never publish to this public repo)
+*.pdf
+*.docx
+*.pptx
+*.hwpx

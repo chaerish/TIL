@@ -18,4 +18,20 @@ export const prerender = true;
       ))}
     </ul>
   )}
+
+  {profile.skills.length > 0 && (
+    <>
+      <h2>기술 스택</h2>
+      {profile.skills.map((group) => (
+        <div class="skill-group">
+          <p class="skill-category">{group.category}</p>
+          <ul class="tag-list">
+            {group.items.map((item) => (
+              <li class="tag">{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </>
+  )}
 </BaseLayout>
