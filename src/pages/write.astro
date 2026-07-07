@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { verifySessionCookieValue, SESSION_COOKIE } from '../lib/auth';
+
+export const prerender = false;
+
+const sessionSecret = import.meta.env.SESSION_SECRET;
+const sessionCookie = Astro.cookies.get(SESSION_COOKIE)?.value;
+const authenticated = Boolean(sessionSecret) && verifySessionCookieValue(sessionCookie, sessionSecret);
+---
+
+<BaseLayout title="글쓰기 · TIL Blog">
+  {!authenticated ? (
+    <section>
+      <h1>글쓰기</h1>
+      <p class="empty-state">관리자만 접근할 수 있습니다.</p>
+      <div id="login-notice"></div>
+      <form id="login-form">
+        <div class="field">
+          <label for="username">아이디</label>
+          <input type="text" id="username" name="username" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="password">비밀번호</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required />
+        </div>
+        <button class="btn" type="submit">로그인</button>
+      </form>
+    </section>
+  ) : (
+    <section>
+      <h1>새 글 작성</h1>
+      <div id="publish-notice"></div>
+      <form id="publish-form">
+        <div class="field">
+          <label for="title">제목</label>
+          <input type="text" id="title" name="title" required maxlength="200" />
+        </div>
+        <div class="field">
+          <label for="tags">태그 (쉼표로 구분)</label>
+          <input type="text" id="tags" name="tags" placeholder="astro, css, github" />
+        </div>
+        <div class="field">
+          <label>본문 (Markdown)</label>
+          <div class="editor-grid">
+            <textarea id="body" name="body" placeholder="여기에 마크다운으로 작성하세요..." required></textarea>
+            <div id="preview" class="preview-pane"></div>
+          </div>
+        </div>
+        <button class="btn" type="submit" id="publish-btn">발행</button>
+      </form>
+    </section>
+  )}
+</BaseLayout>
+
+<script>
+  import { marked } from 'marked';
+
+  const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
+  const loginNotice = document.getElementById('login-notice');
+
+  loginForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const username = (document.getElementById('username') as HTMLInputElement).value;
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+    if (loginNotice) loginNotice.innerHTML = '';
+
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      const data = await res.json().catch(() => ({ error: '로그인에 실패했습니다.' }));
+      if (loginNotice) {
+        loginNotice.innerHTML = `<div class="notice error">${data.error ?? '로그인에 실패했습니다.'}</div>`;
+      }
+    }
+  });
+
+  const publishForm = document.getElementById('publish-form') as HTMLFormElement | null;
+  const publishNotice = document.getElementById('publish-notice');
+  const bodyInput = document.getElementById('body') as HTMLTextAreaElement | null;
+  const previewPane = document.getElementById('preview');
+  const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
+
+  function renderPreview() {
+    if (bodyInput && previewPane) {
+      previewPane.innerHTML = marked.parse(bodyInput.value || '') as string;
+    }
+  }
+
+  bodyInput?.addEventListener('input', renderPreview);
+  renderPreview();
+
+  publishForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (publishNotice) publishNotice.innerHTML = '';
+    if (publishBtn) publishBtn.disabled = true;
+
+    const title = (document.getElementById('title') as HTMLInputElement).value;
+    const tags = (document.getElementById('tags') as HTMLInputElement).value;
+    const body = bodyInput?.value ?? '';
+
+    try {
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, tags, body }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        if (publishNotice) {
+          publishNotice.innerHTML = '<div class="notice success">발행 완료! 잠시 후 블로그에 반영됩니다.</div>';
+        }
+        setTimeout(() => {
+          window.location.href = `/posts/${data.slug}`;
+        }, 3000);
+      } else {
+        if (publishNotice) {
+          publishNotice.innerHTML = `<div class="notice error">${data.error ?? '발행에 실패했습니다.'}</div>`;
+        }
+        if (publishBtn) publishBtn.disabled = false;
+      }
+    } catch {
+      if (publishNotice) {
+        publishNotice.innerHTML = '<div class="notice error">네트워크 오류가 발생했습니다.</div>';
+      }
+      if (publishBtn) publishBtn.disabled = false;
+    }
+  });
+</script>

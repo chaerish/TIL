@@ -1,0 +1,40 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  date: Date;
+  tags?: string[];
+  description?: string;
+}
+
+const { title, date, tags = [], description } = Astro.props;
+
+const formatted = date.toLocaleDateString('ko-KR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title={`${title} · TIL Blog`} description={description}>
+  <a class="back-link" href="/">&larr; 전체 글</a>
+  <article>
+    <header class="post-header">
+      <h1>{title}</h1>
+      <div class="post-meta">
+        <time datetime={date.toISOString()}>{formatted}</time>
+        {tags.length > 0 && (
+          <span>
+            {' '}
+            ·{' '}
+            {tags.map((tag) => (
+              <a class="tag" href={`/tags/${tag}`}>{tag}</a>
+            ))}
+          </span>
+        )}
+      </div>
+    </header>
+    <slot />
+  </article>
+</BaseLayout>

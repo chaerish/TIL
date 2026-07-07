@@ -1,0 +1,29 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+
+export const prerender = true;
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<BaseLayout title="TIL Blog" description="개인 기술 학습 기록 블로그">
+  {posts.length === 0 ? (
+    <p class="empty-state">아직 글이 없습니다.</p>
+  ) : (
+    <ul class="post-list">
+      {posts.map((post) => (
+        <PostCard
+          slug={post.id}
+          title={post.data.title}
+          date={post.data.date}
+          description={post.data.description}
+          tags={post.data.tags}
+        />
+      ))}
+    </ul>
+  )}
+</BaseLayout>

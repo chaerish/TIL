@@ -1,0 +1,26 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  date: Date;
+  description?: string;
+  tags?: string[];
+}
+
+const { slug, title, date, description, tags = [] } = Astro.props;
+
+const formatted = date.toLocaleDateString('ko-KR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<li class="post-card">
+  <a class="post-card-title" href={`/posts/${slug}`}>{title}</a>
+  <div class="post-card-meta">
+    <time datetime={date.toISOString()}>{formatted}</time>
+    {tags.length > 0 && <span> · {tags.join(', ')}</span>}
+  </div>
+  {description && <p class="post-card-desc">{description}</p>}
+</li>
